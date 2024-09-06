@@ -6,11 +6,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/AnhCaooo/electric-user-manager/internal/api/handlers"
-	"github.com/AnhCaooo/electric-user-manager/internal/api/middleware"
-	"github.com/AnhCaooo/electric-user-manager/internal/api/routes"
-	"github.com/AnhCaooo/electric-user-manager/internal/cache"
-	"github.com/AnhCaooo/electric-user-manager/internal/logger"
+	"github.com/AnhCaooo/electric-push-notifications/internal/api/handlers"
+	"github.com/AnhCaooo/electric-push-notifications/internal/api/middleware"
+	"github.com/AnhCaooo/electric-push-notifications/internal/api/routes"
+	"github.com/AnhCaooo/electric-push-notifications/internal/cache"
+	"github.com/AnhCaooo/electric-push-notifications/internal/logger"
 	"github.com/gorilla/mux"
 )
 

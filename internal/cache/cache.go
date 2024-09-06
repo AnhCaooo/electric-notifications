@@ -2,7 +2,7 @@
 
 package cache
 
-import "github.com/AnhCaooo/electric-user-manager/internal/models"
+import "github.com/AnhCaooo/electric-push-notifications/internal/models"
 
 var Cache *models.Cache
 

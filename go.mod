@@ -1,4 +1,4 @@
-module github.com/AnhCaooo/electric-user-manager
+module github.com/AnhCaooo/electric-push-notifications
 
 go 1.21.6
 

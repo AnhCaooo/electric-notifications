@@ -1,3 +1,3 @@
-# electric-user-manager
+# electric-push-notifications
 
-A service that manage users and roles for electric services
+A service that responsible for sending notifications to clients

@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/AnhCaooo/electric-user-manager/internal/logger"
+	"github.com/AnhCaooo/electric-push-notifications/internal/logger"
 	"go.uber.org/zap"
 )
 
