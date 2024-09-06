@@ -33,6 +33,6 @@ func main() {
 	r.Use(middleware.Logger)
 
 	// Start server
-	logger.Logger.Info("Server started on :8000")
-	log.Fatal(http.ListenAndServe(":8000", r))
+	logger.Logger.Info("Server started on :8002")
+	log.Fatal(http.ListenAndServe(":8002", r))
 }
