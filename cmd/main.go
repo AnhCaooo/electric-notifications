@@ -31,7 +31,7 @@ func main() {
 	// Initialize database connection
 	mongo, err := db.Init(ctx, uri)
 	if err != nil {
-		logger.Logger.Error("[server] failed to initialize database connection.", zap.String("error", err.Error()))
+		logger.Logger.Error("[server] failed to initialize database connection.", zap.Error(err))
 		os.Exit(1)
 	}
 	defer mongo.Disconnect(ctx)
