@@ -3,23 +3,38 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/AnhCaooo/electric-push-notifications/internal/api/handlers"
 	"github.com/AnhCaooo/electric-push-notifications/internal/api/middleware"
 	"github.com/AnhCaooo/electric-push-notifications/internal/api/routes"
 	"github.com/AnhCaooo/electric-push-notifications/internal/cache"
+	"github.com/AnhCaooo/electric-push-notifications/internal/db"
 	"github.com/AnhCaooo/electric-push-notifications/internal/logger"
 	"github.com/gorilla/mux"
+	"go.uber.org/zap"
 )
 
+var uri string = "mongodb://<dummy_user>:<dummy_pass>@localhost:27017/?timeoutMS=5000"
+
 func main() {
+	ctx := context.Background()
 	// Initialize logger
 	logger.InitLogger()
 
 	// Initialize cache
 	cache.NewCache()
+
+	// Initialize database connection
+	mongo, err := db.Init(ctx, uri)
+	if err != nil {
+		logger.Logger.Error("[server] failed to initialize database connection.", zap.String("error", err.Error()))
+		os.Exit(1)
+	}
+	defer mongo.Disconnect(ctx)
 
 	// Initial new router
 	r := mux.NewRouter()
