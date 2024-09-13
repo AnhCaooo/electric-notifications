@@ -13,7 +13,7 @@ import (
 
 // Function to connect to mongo database instance
 func Init(ctx context.Context, URI string) (*mongo.Client, error) {
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017/")
+	clientOptions := options.Client().ApplyURI(URI)
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		return nil, fmt.Errorf("[server] failed to connect to database. Error: %s", err.Error())
