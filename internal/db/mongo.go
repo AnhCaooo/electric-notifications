@@ -16,13 +16,12 @@ func Init(ctx context.Context, URI string) (*mongo.Client, error) {
 	clientOptions := options.Client().ApplyURI(URI)
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
-		return nil, fmt.Errorf("[server] failed to connect to database. Error: %s", err.Error())
+		return nil, fmt.Errorf("failed to connect to database. Error: %s", err.Error())
 	}
 
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		logger.Logger.Fatal(err.Error())
-		return nil, fmt.Errorf("[server] failed to ping database. Error: %s", err.Error())
+		return nil, fmt.Errorf("failed to ping database. Error: %s", err.Error())
 	}
 
 	logger.Logger.Info("Successfully connected to database")
