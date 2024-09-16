@@ -23,11 +23,9 @@ var uri string = "mongodb://<dummy_user>:<dummy_pass>@localhost:27017/?timeoutMS
 func main() {
 	ctx := context.Background()
 	// Initialize logger
-	logger.InitLogger()
-
+	logger.Init()
 	// Initialize cache
 	cache.NewCache()
-
 	// Initialize database connection
 	mongo, err := db.Init(ctx, uri)
 	if err != nil {

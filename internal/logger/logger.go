@@ -10,7 +10,7 @@ import (
 var Logger *zap.Logger
 
 // initialize logger
-func InitLogger() {
+func Init() {
 	cfg := zap.NewProductionConfig()
 	cfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder // Use ISO8601 time format
