@@ -13,7 +13,7 @@ import (
 
 var (
 	databaseName   = "electricApp"
-	collectionName = "pushNotifications"
+	collectionName = "notificationTokens"
 )
 var Collection *mongo.Collection
 
