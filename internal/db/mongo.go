@@ -8,7 +8,9 @@ import (
 	"time"
 
 	"github.com/AnhCaooo/electric-push-notifications/internal/logger"
+	"github.com/AnhCaooo/electric-push-notifications/internal/models"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -56,4 +58,54 @@ func createIndex(collection *mongo.Collection, ctx context.Context) error {
 		return fmt.Errorf("mongo index error: %s", err.Error())
 	}
 	return nil
+}
+
+// Insert a notification token
+func InsertToken(
+	collection *mongo.Collection,
+	token models.NotificationToken,
+	ctx context.Context,
+) error {
+	// Check if the token already exists
+	filter := bson.D{{Key: "deviceId", Value: token.DeviceId}}
+	res := collection.FindOne(ctx, filter)
+
+	if res.Err() != nil {
+		if res.Err() == mongo.ErrNoDocuments {
+			// If token does not exist then insert it
+			token.ID = primitive.NewObjectID()
+			_, err := collection.InsertOne(ctx, token)
+			return fmt.Errorf("failed to insert token: %s", err.Error())
+		}
+		return res.Err()
+	}
+
+	// If token exists update the timestamp to now
+	_, err := collection.UpdateOne(ctx, filter, bson.M{"$set": bson.M{"timestamp": time.Now().UTC()}})
+	return fmt.Errorf("failed to update existing token: %s", err.Error())
+}
+
+// Get all the tokens registered for a user
+func GetTokens(
+	collection *mongo.Collection,
+	ctx context.Context,
+	userId string,
+) ([]string, error) {
+	filter := bson.D{{Key: "userId", Value: userId}}
+	tokenCursor, err := collection.Find(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find tokens for user: %s", err.Error())
+	}
+
+	tokens := make([]string, 0)
+	for tokenCursor.Next(ctx) {
+		var token models.NotificationToken
+		err = tokenCursor.Decode(&token)
+		tokens = append(tokens, token.DeviceId)
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode notification token: %s", err.Error())
+	}
+	return tokens, nil
 }
