@@ -20,11 +20,11 @@ const (
 )
 
 func Init(ctx context.Context) error {
-	homeDir, err := helpers.GetHomeDir()
+	currentDirectory, err := helpers.GetCurrentDir()
 	if err != nil {
 		return err
 	}
-	fullPath := homeDir + serviceAccountKeyPath
+	fullPath := currentDirectory + serviceAccountKeyPath
 	opt := option.WithCredentialsFile(fullPath)
 	// Initialize Firebase SDK with Google Application Default credentials
 	app, err := firebase.NewApp(ctx, nil, opt)

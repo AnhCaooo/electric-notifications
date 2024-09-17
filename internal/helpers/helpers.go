@@ -37,12 +37,11 @@ func DecodeResponse[T any](r *http.Response) (v T, err error) {
 	return v, nil
 }
 
-// Get home directory
-func GetHomeDir() (dir string, err error) {
-	// Find home directory.
-	home, err := os.Getwd()
+// Get current directory
+func GetCurrentDir() (dir string, err error) {
+	dir, err = os.Getwd()
 	if err != nil {
-		return "", fmt.Errorf("failed to get home directory: %s", err.Error())
+		return "", fmt.Errorf("failed to get current directory: %s", err.Error())
 	}
-	return home, nil
+	return
 }
