@@ -24,7 +24,7 @@ func Init(ctx context.Context) error {
 	// Get the FCM object
 	FcmClient, err = app.Messaging(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to get FCM instance: %s", err.Error())
+		return fmt.Errorf("error getting Messaging client: %s", err.Error())
 	}
 	logger.Logger.Info("Successfully connected to Firebase Cloud Message platform")
 	return nil
