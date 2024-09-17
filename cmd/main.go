@@ -12,6 +12,7 @@ import (
 	"github.com/AnhCaooo/electric-push-notifications/internal/api/middleware"
 	"github.com/AnhCaooo/electric-push-notifications/internal/api/routes"
 	"github.com/AnhCaooo/electric-push-notifications/internal/cache"
+	title "github.com/AnhCaooo/electric-push-notifications/internal/constants"
 	"github.com/AnhCaooo/electric-push-notifications/internal/db"
 	"github.com/AnhCaooo/electric-push-notifications/internal/firebase"
 	"github.com/AnhCaooo/electric-push-notifications/internal/logger"
@@ -30,13 +31,13 @@ func main() {
 	// Initialize database connection
 	mongo, err := db.Init(ctx, uri)
 	if err != nil {
-		logger.Logger.Error("[server]", zap.Error(err))
+		logger.Logger.Error(title.Server, zap.Error(err))
 		os.Exit(1)
 	}
 	defer mongo.Disconnect(ctx)
 	// Initialize FCM connection
 	if err = firebase.Init(ctx); err != nil {
-		logger.Logger.Error("[server]", zap.Error(err))
+		logger.Logger.Error(title.Server, zap.Error(err))
 		os.Exit(1)
 	}
 
