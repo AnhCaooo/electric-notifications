@@ -16,11 +16,16 @@ import (
 	"github.com/AnhCaooo/electric-push-notifications/internal/notification"
 )
 
+const (
+	clientTitle = "[request]"
+	serverTitle = "[server]"
+)
+
 // create token to database or update time live if it is existing
 func CreateToken(w http.ResponseWriter, r *http.Request) {
 	reqBody, err := helpers.DecodeRequest[models.NotificationToken](r)
 	if err != nil {
-		logger.Logger.Error("[request] failed to decode request body", zap.Error(err))
+		logger.Logger.Error(clientTitle, zap.Error(err))
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -29,7 +34,7 @@ func CreateToken(w http.ResponseWriter, r *http.Request) {
 	err = db.InsertToken(db.Collection, reqBody, context.TODO())
 	if err != nil {
 		// You should have better error handling here
-		logger.Logger.Error("[server]", zap.Error(err))
+		logger.Logger.Error(serverTitle, zap.Error(err))
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -38,20 +43,20 @@ func CreateToken(w http.ResponseWriter, r *http.Request) {
 func SendNotifications(w http.ResponseWriter, r *http.Request) {
 	reqBody, err := helpers.DecodeRequest[models.NotificationMessage](r)
 	if err != nil {
-		logger.Logger.Error("[request] failed to decode request body", zap.Error(err))
+		logger.Logger.Error(clientTitle, zap.Error(err))
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	// retrieve all associated device tokens with given userId
 	tokens, err := db.GetTokens(db.Collection, context.TODO(), reqBody.UserId)
 	if err != nil {
-		logger.Logger.Error("[server]", zap.Error(err))
+		logger.Logger.Error(serverTitle, zap.Error(err))
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	err = notification.SendToMultiTokens(firebase.FcmClient, context.TODO(), tokens, reqBody.UserId, reqBody.Message)
 	if err != nil {
-		logger.Logger.Error("[server]", zap.Error(err))
+		logger.Logger.Error(serverTitle, zap.Error(err))
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
