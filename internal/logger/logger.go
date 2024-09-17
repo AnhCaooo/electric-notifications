@@ -9,6 +9,7 @@ import (
 
 var Logger *zap.Logger
 
+// todo: add defer to sync logger
 // initialize logger
 func Init() {
 	cfg := zap.NewProductionConfig()

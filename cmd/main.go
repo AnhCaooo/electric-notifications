@@ -13,12 +13,13 @@ import (
 	"github.com/AnhCaooo/electric-push-notifications/internal/api/routes"
 	"github.com/AnhCaooo/electric-push-notifications/internal/cache"
 	"github.com/AnhCaooo/electric-push-notifications/internal/db"
+	"github.com/AnhCaooo/electric-push-notifications/internal/firebase"
 	"github.com/AnhCaooo/electric-push-notifications/internal/logger"
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 )
 
-var uri string = "mongodb://<dummy_user>:<dummy_pass>@localhost:27017/?timeoutMS=5000"
+const uri string = "mongodb://<dummy_user>:<dummy_pass>@localhost:27017/?timeoutMS=5000"
 
 func main() {
 	ctx := context.Background()
@@ -29,10 +30,15 @@ func main() {
 	// Initialize database connection
 	mongo, err := db.Init(ctx, uri)
 	if err != nil {
-		logger.Logger.Error("[server] failed to initialize database connection.", zap.Error(err))
+		logger.Logger.Error("[server]", zap.Error(err))
 		os.Exit(1)
 	}
 	defer mongo.Disconnect(ctx)
+	// Initialize FCM connection
+	if err = firebase.Init(ctx); err != nil {
+		logger.Logger.Error("[server]", zap.Error(err))
+		os.Exit(1)
+	}
 
 	// Initial new router
 	r := mux.NewRouter()
