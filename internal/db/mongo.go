@@ -82,7 +82,11 @@ func InsertToken(
 
 	// If token exists update the timestamp to now
 	_, err := collection.UpdateOne(ctx, filter, bson.M{"$set": bson.M{"timestamp": time.Now().UTC()}})
-	return fmt.Errorf("failed to update existing token: %s", err.Error())
+	if err != nil {
+		return fmt.Errorf("failed to update existing token: %s", err.Error())
+	}
+	logger.Logger.Info("Successfully inserting device token to db")
+	return nil
 }
 
 // Get all the tokens registered for a user
@@ -107,5 +111,6 @@ func GetTokens(
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode notification token: %s", err.Error())
 	}
+	logger.Logger.Info("Successfully getting device token from db")
 	return tokens, nil
 }
