@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 )
 
 // encode response bodies
@@ -34,4 +35,14 @@ func DecodeResponse[T any](r *http.Response) (v T, err error) {
 		return v, fmt.Errorf("decode json: %w", err)
 	}
 	return v, nil
+}
+
+// Get home directory
+func GetHomeDir() (dir string, err error) {
+	// Find home directory.
+	home, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("failed to get home directory: %s", err.Error())
+	}
+	return home, nil
 }

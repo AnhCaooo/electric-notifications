@@ -8,16 +8,24 @@ import (
 
 	firebase "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/messaging"
+	"github.com/AnhCaooo/electric-push-notifications/internal/helpers"
 	"github.com/AnhCaooo/electric-push-notifications/internal/logger"
 	"google.golang.org/api/option"
 )
 
 var FcmClient *messaging.Client
 
-const serviceAccountKeyPath string = "../config/firebaseKey.json"
+const (
+	serviceAccountKeyPath string = "/internal/config/firebaseKey.json"
+)
 
 func Init(ctx context.Context) error {
-	opt := option.WithCredentialsFile(serviceAccountKeyPath)
+	homeDir, err := helpers.GetHomeDir()
+	if err != nil {
+		return err
+	}
+	fullPath := homeDir + serviceAccountKeyPath
+	opt := option.WithCredentialsFile(fullPath)
 	// Initialize Firebase SDK with Google Application Default credentials
 	app, err := firebase.NewApp(ctx, nil, opt)
 	if err != nil {
