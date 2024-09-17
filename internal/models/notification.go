@@ -13,3 +13,8 @@ type NotificationToken struct {
 	DeviceId  string             `bson:"deviceId" json:"deviceId"`
 	Timestamp time.Time          `bson:"timestamp" json:"timestamp"`
 }
+
+type NotificationMessage struct {
+	UserId  string `json:"userId"`
+	Message string `json:"message"`
+}

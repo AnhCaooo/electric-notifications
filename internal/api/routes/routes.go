@@ -5,7 +5,7 @@ package routes
 import (
 	"net/http"
 
-	"github.com/AnhCaooo/electric-push-notifications/internal/api/handlers"
+	"github.com/AnhCaooo/electric-push-notifications/internal/api"
 )
 
 // Endpoint is the presentation of object which contains values for routing
@@ -18,11 +18,11 @@ type Endpoint struct {
 var Endpoints = []Endpoint{
 	{
 		Path:    "/v1/tokens",
-		Handler: handlers.CreateToken,
+		Handler: api.CreateToken,
 		Method:  "POST",
 	}, {
 		Path:    "/v1/notifications",
-		Handler: nil,
+		Handler: api.SendNotifications,
 		Method:  "POST",
 	},
 }

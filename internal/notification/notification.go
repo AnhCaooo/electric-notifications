@@ -10,7 +10,7 @@ import (
 )
 
 // Send notification based on a device token
-func SendNotificationToSingleToken(
+func SendToSingleToken(
 	fcmClient *messaging.Client,
 	ctx context.Context,
 	token, userId, message string,
@@ -32,7 +32,7 @@ func SendNotificationToSingleToken(
 }
 
 // Send notification based on multi device tokens
-func SendNotificationToMultiTokens(
+func SendToMultiTokens(
 	fcmClient *messaging.Client,
 	ctx context.Context,
 	tokens []string,
