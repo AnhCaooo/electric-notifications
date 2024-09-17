@@ -34,13 +34,13 @@ docker login -u "<docker_username>" -p "<docker_password>" docker.io
 #### Step 1
 Build image locally
 ```bash
-# Option 1 (not recommended)
+# Option 1
 docker build --tag <image-name>:<number-version> .
 
-# Option 2 (not recommended)
+# Option 2 
 docker build -t <image-name>:<number-version> .
 
-# Option 3 (recommended)
+# Option 3 
 # this command by default will build image with tag version 'latest'. 
 # this is an enhancement when before the image is built, all unit tests will be executed
 make docker 
