@@ -3,18 +3,19 @@
 package logger
 
 import (
+	"time"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
 var Logger *zap.Logger
 
-// todo: add defer to sync logger
 // initialize logger
 func Init() {
 	cfg := zap.NewProductionConfig()
 	cfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-	cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder // Use ISO8601 time format
+	cfg.EncoderConfig.EncodeTime = syslogTimeEncoder
 
 	// Disable JSON encoding
 	cfg.Encoding = "console"
@@ -24,4 +25,8 @@ func Init() {
 		panic(err)
 	}
 	Logger = l
+}
+
+func syslogTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+	enc.AppendString(t.Format("2006-01-02 15:04:05"))
 }
