@@ -37,7 +37,7 @@ func DecodeResponse[T any](r *http.Response) (v T, err error) {
 	return v, nil
 }
 
-// Get current directory
+// get current directory (from root to this repo only)
 func GetCurrentDir() (dir string, err error) {
 	dir, err = os.Getwd()
 	if err != nil {

@@ -15,15 +15,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var (
-	databaseName   = "electricApp"
-	collectionName = "notificationTokens"
-)
 var Collection *mongo.Collection
 
 // Function to connect to mongo database instance and create collection if it does not exist
-func Init(ctx context.Context, URI string) (*mongo.Client, error) {
-	clientOptions := options.Client().ApplyURI(URI)
+func Init(ctx context.Context, cfg models.Database) (*mongo.Client, error) {
+	clientOptions := options.Client().ApplyURI(getURI(cfg))
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database. Error: %s", err.Error())
@@ -34,12 +30,16 @@ func Init(ctx context.Context, URI string) (*mongo.Client, error) {
 		return nil, fmt.Errorf("failed to ping database. Error: %s", err.Error())
 	}
 
-	Collection = client.Database(databaseName).Collection(collectionName)
+	Collection = client.Database(cfg.Name).Collection(cfg.Collection)
 	if err = createIndex(Collection, ctx); err != nil {
 		return nil, err
 	}
 	logger.Logger.Info("Successfully connected to database")
 	return client, nil
+}
+
+func getURI(cfg models.Database) string {
+	return fmt.Sprintf("mongodb://%s:%s@%s:%s/?timeoutMS=5000", cfg.Username, cfg.Password, cfg.Host, cfg.Port)
 }
 
 func createIndex(collection *mongo.Collection, ctx context.Context) error {
