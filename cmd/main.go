@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"github.com/AnhCaooo/electric-push-notifications/internal/api/middleware"
 	"github.com/AnhCaooo/electric-push-notifications/internal/api/routes"
 	"github.com/AnhCaooo/electric-push-notifications/internal/cache"
+	"github.com/AnhCaooo/electric-push-notifications/internal/config"
 	title "github.com/AnhCaooo/electric-push-notifications/internal/constants"
 	"github.com/AnhCaooo/electric-push-notifications/internal/db"
 	"github.com/AnhCaooo/electric-push-notifications/internal/firebase"
@@ -20,21 +22,30 @@ import (
 	"go.uber.org/zap"
 )
 
-const uri string = "mongodb://<dummy_user>:<dummy_pass>@localhost:27017/?timeoutMS=5000"
-
 func main() {
 	ctx := context.Background()
 	// Initialize logger
 	logger.Init()
-	// Initialize cache
+	defer logger.Logger.Sync()
+
+	// Read configuration file
+	err := config.ReadFile(&config.Config)
+	if err != nil {
+		logger.Logger.Error(title.Server, zap.Error(err))
+		os.Exit(1)
+	}
+
+	// Initialize in-memory cache
 	cache.NewCache()
+
 	// Initialize database connection
-	mongo, err := db.Init(ctx, uri)
+	mongo, err := db.Init(ctx, config.Config.Database)
 	if err != nil {
 		logger.Logger.Error(title.Server, zap.Error(err))
 		os.Exit(1)
 	}
 	defer mongo.Disconnect(ctx)
+
 	// Initialize FCM connection
 	if err = firebase.Init(ctx); err != nil {
 		logger.Logger.Error(title.Server, zap.Error(err))
@@ -53,6 +64,6 @@ func main() {
 	r.Use(middleware.Logger)
 
 	// Start server
-	logger.Logger.Info("Server started on :8002")
-	log.Fatal(http.ListenAndServe(":8002", r))
+	logger.Logger.Info("Server started on", zap.String("port", config.Config.Server.Port))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", config.Config.Server.Port), r))
 }
