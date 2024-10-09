@@ -17,6 +17,11 @@ type Endpoint struct {
 
 var Endpoints = []Endpoint{
 	{
+		Path:    "/v1/ping",
+		Handler: api.Ping,
+		Method:  "GET",
+	},
+	{
 		Path:    "/v1/tokens",
 		Handler: api.CreateToken,
 		Method:  "POST",

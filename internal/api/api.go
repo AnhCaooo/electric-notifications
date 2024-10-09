@@ -4,6 +4,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -16,6 +17,10 @@ import (
 	"github.com/AnhCaooo/electric-push-notifications/internal/models"
 	"github.com/AnhCaooo/electric-push-notifications/internal/notification"
 )
+
+func Ping(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "pong")
+}
 
 // create token to database or update time live if it is existing
 func CreateToken(w http.ResponseWriter, r *http.Request) {
