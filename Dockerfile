@@ -1,6 +1,6 @@
 # Created by Anh Cao on 27.08.2024.
 
-FROM --platform=linux/amd64 golang:alpine
+FROM golang:alpine
 
 # Set destination inside the container
 WORKDIR /app
@@ -22,7 +22,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /electric-push-notifications ./cmd/
 # But we can document in the Dockerfile what ports
 # the application is going to listen on by default.
 # https://docs.docker.com/reference/dockerfile/#expose
-EXPOSE 8002
+EXPOSE 5003
 
 # Run
 CMD ["/electric-push-notifications"]
