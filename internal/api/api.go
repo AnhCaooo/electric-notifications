@@ -18,6 +18,7 @@ import (
 	"github.com/AnhCaooo/electric-push-notifications/internal/notification"
 )
 
+// Ping the connection to the server
 func Ping(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "pong")
 }
