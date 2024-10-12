@@ -1,6 +1,6 @@
 # Created by Anh Cao on 27.08.2024.
 
-FROM golang:alpine
+FROM --platform=linux/amd64 golang:alpine
 
 # Set destination inside the container
 WORKDIR /app
