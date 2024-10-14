@@ -1,5 +1,4 @@
-// Created by Anh Cao on 23.09.2024.
-
+// AnhCao 2024
 package firebase
 
 import (
