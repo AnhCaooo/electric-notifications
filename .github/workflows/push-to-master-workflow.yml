@@ -1,12 +1,10 @@
 # AnhCao 2024
-# This workflow will run unit test, build Docker image then tag and push to Docker registry
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
 
 name: Push to master branch workflow
 
 on:
   push:
-    branches: 
+    branches:
       - master
 
 jobs:
@@ -16,8 +14,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
-      - name: Set up Docker Buildx 
+
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
       - name: Log in to Docker Hub
@@ -32,11 +30,9 @@ jobs:
         run: make docker
 
       - name: Tag Docker Image
-        id: tag-docker-image 
-        run: make tag 
+        id: tag-docker-image
+        run: make tag
 
       - name: Push Docker Image to Docker Hub
         id: push-docker-image
         run: make push
-
-
