@@ -1,7 +1,21 @@
-# Created by Anh Cao on 27.08.2024.
+# AnhCao 2024
+DOCKER_USERNAME = anhcaoo
+DOCKER_IMAGE = electric-push-notifications
+TAGGED_VERSION = 1.0.0
+DOCKER_CONTAINER = ${DOCKER_IMAGE}:${TAGGED_VERSION} 
 
-APPLICATION_NAME ?= electric-push-notifications
-TAG_VERSION ?= latest
+.PHONY: build tag push test docker
 
-docker: 
-	go test ./... && docker build --tag ${APPLICATION_NAME}/${TAG_VERSION} .
+build: 
+	docker build --tag ${DOCKER_CONTAINER} .
+
+tag: 
+	docker tag ${DOCKER_CONTAINER} ${DOCKER_USERNAME}/${DOCKER_CONTAINER}
+
+push: 
+	docker push ${DOCKER_USERNAME}/${DOCKER_CONTAINER}
+
+test: 
+	go test ./...
+
+docker: test build
