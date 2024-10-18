@@ -4,7 +4,7 @@ package routes
 import (
 	"net/http"
 
-	"github.com/AnhCaooo/electric-push-notifications/internal/api"
+	"github.com/AnhCaooo/electric-notifications/internal/api"
 )
 
 // Endpoint is the presentation of object which contains values for routing

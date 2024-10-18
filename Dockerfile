@@ -15,7 +15,7 @@ COPY ./cmd/ ./cmd/
 COPY ./internal/ ./internal/
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux go build -o /electric-push-notifications ./cmd/
+RUN CGO_ENABLED=0 GOOS=linux go build -o /electric-notifications ./cmd/
 
 # Optional:
 # To bind to a TCP port, runtime parameters must be supplied to the docker command.
@@ -25,4 +25,4 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /electric-push-notifications ./cmd/
 EXPOSE 5003
 
 # Run
-CMD ["/electric-push-notifications"]
+CMD ["/electric-notifications"]
