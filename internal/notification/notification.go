@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"firebase.google.com/go/v4/messaging"
-	"github.com/AnhCaooo/electric-push-notifications/internal/logger"
+	"github.com/AnhCaooo/electric-notifications/internal/logger"
 	"go.uber.org/zap"
 )
 

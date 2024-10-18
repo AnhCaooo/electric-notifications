@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/AnhCaooo/electric-push-notifications/internal/logger"
-	"github.com/AnhCaooo/electric-push-notifications/internal/models"
+	"github.com/AnhCaooo/electric-notifications/internal/logger"
+	"github.com/AnhCaooo/electric-notifications/internal/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

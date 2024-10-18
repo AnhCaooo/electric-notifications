@@ -1,7 +1,7 @@
 // AnhCao 2024
 package cache
 
-import "github.com/AnhCaooo/electric-push-notifications/internal/models"
+import "github.com/AnhCaooo/electric-notifications/internal/models"
 
 var Cache *models.Cache
 

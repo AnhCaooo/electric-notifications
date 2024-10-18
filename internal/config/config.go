@@ -7,8 +7,8 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/AnhCaooo/electric-push-notifications/internal/helpers"
-	"github.com/AnhCaooo/electric-push-notifications/internal/models"
+	"github.com/AnhCaooo/electric-notifications/internal/helpers"
+	"github.com/AnhCaooo/electric-notifications/internal/models"
 )
 
 var Config models.Config

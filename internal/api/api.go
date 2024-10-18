@@ -9,13 +9,13 @@ import (
 
 	"go.uber.org/zap"
 
-	title "github.com/AnhCaooo/electric-push-notifications/internal/constants"
-	"github.com/AnhCaooo/electric-push-notifications/internal/db"
-	"github.com/AnhCaooo/electric-push-notifications/internal/firebase"
-	"github.com/AnhCaooo/electric-push-notifications/internal/helpers"
-	"github.com/AnhCaooo/electric-push-notifications/internal/logger"
-	"github.com/AnhCaooo/electric-push-notifications/internal/models"
-	"github.com/AnhCaooo/electric-push-notifications/internal/notification"
+	title "github.com/AnhCaooo/electric-notifications/internal/constants"
+	"github.com/AnhCaooo/electric-notifications/internal/db"
+	"github.com/AnhCaooo/electric-notifications/internal/firebase"
+	"github.com/AnhCaooo/electric-notifications/internal/helpers"
+	"github.com/AnhCaooo/electric-notifications/internal/logger"
+	"github.com/AnhCaooo/electric-notifications/internal/models"
+	"github.com/AnhCaooo/electric-notifications/internal/notification"
 )
 
 // Ping the connection to the server

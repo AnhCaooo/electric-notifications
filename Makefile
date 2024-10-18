@@ -1,6 +1,6 @@
 # AnhCao 2024
 DOCKER_USERNAME = anhcaoo
-DOCKER_IMAGE = electric-push-notifications
+DOCKER_IMAGE = electric-notifications
 TAGGED_VERSION = 1.0.0
 DOCKER_CONTAINER = ${DOCKER_IMAGE}:${TAGGED_VERSION} 
 

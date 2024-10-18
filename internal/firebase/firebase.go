@@ -7,8 +7,8 @@ import (
 
 	firebase "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/messaging"
-	"github.com/AnhCaooo/electric-push-notifications/internal/helpers"
-	"github.com/AnhCaooo/electric-push-notifications/internal/logger"
+	"github.com/AnhCaooo/electric-notifications/internal/helpers"
+	"github.com/AnhCaooo/electric-notifications/internal/logger"
 	"google.golang.org/api/option"
 )
 

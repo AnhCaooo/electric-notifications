@@ -9,6 +9,7 @@ on:
 
 jobs:
   build:
+    name: build, tag and push Docker image
     runs-on: ubuntu-latest
 
     steps:
@@ -36,3 +37,4 @@ jobs:
       - name: Push Docker Image to Docker Hub
         id: push-docker-image
         run: make push
+
