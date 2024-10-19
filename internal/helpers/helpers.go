@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 )
 
 // encode response bodies
@@ -43,4 +44,11 @@ func GetCurrentDir() (dir string, err error) {
 		return "", fmt.Errorf("failed to get current directory: %s", err.Error())
 	}
 	return
+}
+
+func trimSpaceForByte(value []byte) []byte {
+	// convert to string
+	strVal := string(value)
+	trimmedStrVal := strings.TrimSpace(strVal)
+	return []byte(trimmedStrVal)
 }

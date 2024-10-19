@@ -14,7 +14,7 @@ import (
 	"github.com/AnhCaooo/electric-notifications/internal/api/routes"
 	"github.com/AnhCaooo/electric-notifications/internal/cache"
 	"github.com/AnhCaooo/electric-notifications/internal/config"
-	title "github.com/AnhCaooo/electric-notifications/internal/constants"
+	"github.com/AnhCaooo/electric-notifications/internal/constants"
 	"github.com/AnhCaooo/electric-notifications/internal/db"
 	"github.com/AnhCaooo/electric-notifications/internal/firebase"
 	"github.com/AnhCaooo/electric-notifications/internal/logger"
@@ -31,7 +31,7 @@ func main() {
 	// Read configuration file
 	err := config.ReadFile(&config.Config)
 	if err != nil {
-		logger.Logger.Error(title.Server, zap.Error(err))
+		logger.Logger.Error(constants.Server, zap.Error(err))
 		os.Exit(1)
 	}
 
@@ -41,14 +41,14 @@ func main() {
 	// Initialize database connection
 	mongo, err := db.Init(ctx, config.Config.Database)
 	if err != nil {
-		logger.Logger.Error(title.Server, zap.Error(err))
+		logger.Logger.Error(constants.Server, zap.Error(err))
 		os.Exit(1)
 	}
 	defer mongo.Disconnect(ctx)
 
 	// Initialize FCM connection
 	if err = firebase.Init(ctx); err != nil {
-		logger.Logger.Error(title.Server, zap.Error(err))
+		logger.Logger.Error(constants.Server, zap.Error(err))
 		os.Exit(1)
 	}
 

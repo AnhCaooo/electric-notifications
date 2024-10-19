@@ -7,6 +7,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
+	"github.com/AnhCaooo/electric-notifications/internal/constants"
 	"github.com/AnhCaooo/electric-notifications/internal/helpers"
 	"github.com/AnhCaooo/electric-notifications/internal/models"
 )
@@ -19,8 +20,14 @@ func ReadFile(cfg *models.Config) error {
 	if err != nil {
 		return err
 	}
-	configPath := fmt.Sprintf("%s/internal/config/config.yml", currentDir)
-	f, err := os.Open(configPath)
+	encryptedConfigFilePath := currentDir + constants.EncryptedConfigFile
+	decryptedConfigFilePath := currentDir + constants.DecryptedConfigFile
+
+	if err = helpers.DecryptFile(encryptedConfigFilePath, decryptedConfigFilePath); err != nil {
+		return err
+	}
+
+	f, err := os.Open(decryptedConfigFilePath)
 	if err != nil {
 		return fmt.Errorf("failed to open config.yml: %s", err.Error())
 	}
@@ -32,4 +39,20 @@ func ReadFile(cfg *models.Config) error {
 		return fmt.Errorf("failed to decode config.yml: %s", err.Error())
 	}
 	return nil
+}
+
+// Decrypt the encrypted Firebase configuration and return decrypted config path
+func DecryptFirebaseKeyFile() (string, error) {
+	currentDir, err := helpers.GetCurrentDir()
+	if err != nil {
+		return "", err
+	}
+	encryptedFirebaseFilePath := currentDir + constants.FirebaseKeyEncryptedFile
+	decryptedFirebaseFilePath := currentDir + constants.FirebaseKeyDecryptedFile
+
+	if err = helpers.DecryptFile(encryptedFirebaseFilePath, decryptedFirebaseFilePath); err != nil {
+		return "", err
+	}
+
+	return decryptedFirebaseFilePath, nil
 }
