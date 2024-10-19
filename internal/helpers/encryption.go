@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/AnhCaooo/electric-notifications/internal/constants"
 )
 
 // Read encryption key from config folder
@@ -16,7 +18,7 @@ func readEncryptionKey() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	keyFilePath := fmt.Sprintf("%s/internal/config/key.txt", currentDir)
+	keyFilePath := currentDir + constants.EncryptionKeyFile
 
 	key, err := os.ReadFile(keyFilePath)
 	if err != nil {
