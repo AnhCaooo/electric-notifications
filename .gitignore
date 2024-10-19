@@ -5,4 +5,5 @@
 /internal/config/config.yml
 /internal/config/config.dec.yml
 /internal/config/firebaseKey.json
+/internal/config/firebaseKey.dec.json
 /internal/config/key.txt
