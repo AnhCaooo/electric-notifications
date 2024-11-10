@@ -8,8 +8,9 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/AnhCaooo/electric-notifications/internal/constants"
-	"github.com/AnhCaooo/electric-notifications/internal/helpers"
 	"github.com/AnhCaooo/electric-notifications/internal/models"
+	"github.com/AnhCaooo/go-goods/crypto"
+	"github.com/AnhCaooo/go-goods/helpers"
 )
 
 var Config models.Config
@@ -20,10 +21,17 @@ func ReadFile(cfg *models.Config) error {
 	if err != nil {
 		return err
 	}
+
+	keyFilePath := currentDir + constants.CryptoKeyFile
+	key, err := crypto.ReadEncryptionKey(keyFilePath)
+	if err != nil {
+		return err
+	}
+
 	encryptedConfigFilePath := currentDir + constants.EncryptedConfigFile
 	decryptedConfigFilePath := currentDir + constants.DecryptedConfigFile
 
-	if err = helpers.DecryptFile(encryptedConfigFilePath, decryptedConfigFilePath); err != nil {
+	if err = crypto.DecryptFile(key, encryptedConfigFilePath, decryptedConfigFilePath); err != nil {
 		return err
 	}
 
@@ -47,10 +55,16 @@ func DecryptFirebaseKeyFile() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	keyFilePath := currentDir + constants.CryptoKeyFile
+	key, err := crypto.ReadEncryptionKey(keyFilePath)
+	if err != nil {
+		return "", err
+	}
+
 	encryptedFirebaseFilePath := currentDir + constants.FirebaseKeyEncryptedFile
 	decryptedFirebaseFilePath := currentDir + constants.FirebaseKeyDecryptedFile
 
-	if err = helpers.DecryptFile(encryptedFirebaseFilePath, decryptedFirebaseFilePath); err != nil {
+	if err = crypto.DecryptFile(key, encryptedFirebaseFilePath, decryptedFirebaseFilePath); err != nil {
 		return "", err
 	}
 

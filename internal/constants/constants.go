@@ -11,4 +11,5 @@ const (
 	FirebaseKeyFile          string = "/internal/config/firebaseKey.json"
 	FirebaseKeyEncryptedFile string = "/internal/config/firebaseKey.enc.json"
 	FirebaseKeyDecryptedFile string = "/internal/config/firebaseKey.dec.json"
+	CryptoKeyFile            string = "/internal/config/key.txt"
 )

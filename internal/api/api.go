@@ -12,10 +12,10 @@ import (
 	title "github.com/AnhCaooo/electric-notifications/internal/constants"
 	"github.com/AnhCaooo/electric-notifications/internal/db"
 	"github.com/AnhCaooo/electric-notifications/internal/firebase"
-	"github.com/AnhCaooo/electric-notifications/internal/helpers"
 	"github.com/AnhCaooo/electric-notifications/internal/logger"
 	"github.com/AnhCaooo/electric-notifications/internal/models"
 	"github.com/AnhCaooo/electric-notifications/internal/notification"
+	"github.com/AnhCaooo/go-goods/encode"
 )
 
 // Ping the connection to the server
@@ -25,7 +25,7 @@ func Ping(w http.ResponseWriter, r *http.Request) {
 
 // create token to database or update time live if it is existing
 func CreateToken(w http.ResponseWriter, r *http.Request) {
-	reqBody, err := helpers.DecodeRequest[models.NotificationToken](r)
+	reqBody, err := encode.DecodeRequest[models.NotificationToken](r)
 	if err != nil {
 		logger.Logger.Error(title.Client, zap.Error(err))
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -43,7 +43,7 @@ func CreateToken(w http.ResponseWriter, r *http.Request) {
 }
 
 func SendNotifications(w http.ResponseWriter, r *http.Request) {
-	reqBody, err := helpers.DecodeRequest[models.NotificationMessage](r)
+	reqBody, err := encode.DecodeRequest[models.NotificationMessage](r)
 	if err != nil {
 		logger.Logger.Error(title.Client, zap.Error(err))
 		http.Error(w, err.Error(), http.StatusBadRequest)
