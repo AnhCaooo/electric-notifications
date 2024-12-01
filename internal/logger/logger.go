@@ -8,10 +8,8 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-var Logger *zap.Logger
-
 // initialize logger
-func Init() {
+func Init() *zap.Logger {
 	cfg := zap.NewProductionConfig()
 	cfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	cfg.EncoderConfig.EncodeTime = syslogTimeEncoder
@@ -23,7 +21,7 @@ func Init() {
 	if err != nil {
 		panic(err)
 	}
-	Logger = l
+	return l
 }
 
 func syslogTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {

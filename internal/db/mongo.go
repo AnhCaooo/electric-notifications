@@ -6,42 +6,56 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/AnhCaooo/electric-notifications/internal/logger"
 	"github.com/AnhCaooo/electric-notifications/internal/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.uber.org/zap"
 )
 
-var Collection *mongo.Collection
+type Mongo struct {
+	config           *models.Database
+	logger           *zap.Logger
+	ctx              context.Context
+	collectionClient *mongo.Collection
+}
+
+func NewMongo(ctx context.Context, config *models.Database, logger *zap.Logger) *Mongo {
+	return &Mongo{
+		config:           config,
+		logger:           logger,
+		ctx:              ctx,
+		collectionClient: nil,
+	}
+}
 
 // Function to connect to mongo database instance and create collection if it does not exist
-func Init(ctx context.Context, cfg models.Database) (*mongo.Client, error) {
-	clientOptions := options.Client().ApplyURI(getURI(cfg))
-	client, err := mongo.Connect(ctx, clientOptions)
+func (db *Mongo) EstablishConnection() (*mongo.Client, error) {
+	clientOptions := options.Client().ApplyURI(db.getURI())
+	client, err := mongo.Connect(db.ctx, clientOptions)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database. Error: %s", err.Error())
 	}
 
-	err = client.Ping(ctx, nil)
+	err = client.Ping(db.ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to ping database. Error: %s", err.Error())
 	}
 
-	Collection = client.Database(cfg.Name).Collection(cfg.Collection)
-	if err = createIndex(Collection, ctx); err != nil {
+	db.collectionClient = client.Database(db.config.Name).Collection(db.config.Collection)
+	if err = db.createIndex(db.collectionClient); err != nil {
 		return nil, err
 	}
-	logger.Logger.Info("Successfully connected to database")
+	db.logger.Info("Successfully connected to database")
 	return client, nil
 }
 
-func getURI(cfg models.Database) string {
-	return fmt.Sprintf("mongodb://%s:%s@%s:%s/?timeoutMS=5000", cfg.Username, cfg.Password, cfg.Host, cfg.Port)
+func (db Mongo) getURI() string {
+	return fmt.Sprintf("mongodb://%s:%s@%s:%s/?timeoutMS=5000", db.config.Username, db.config.Password, db.config.Host, db.config.Port)
 }
 
-func createIndex(collection *mongo.Collection, ctx context.Context) error {
+func (db Mongo) createIndex(collection *mongo.Collection) error {
 	const weeklyHours = 24 * 7
 
 	//create the index model with the field "timestamp"
@@ -52,7 +66,7 @@ func createIndex(collection *mongo.Collection, ctx context.Context) error {
 		),
 	}
 	//Create the index on the token collection
-	_, err := collection.Indexes().CreateOne(ctx, indexModel)
+	_, err := collection.Indexes().CreateOne(db.ctx, indexModel)
 	if err != nil {
 		return fmt.Errorf("mongo index error: %s", err.Error())
 	}
@@ -60,48 +74,44 @@ func createIndex(collection *mongo.Collection, ctx context.Context) error {
 }
 
 // Insert a notification token
-func InsertToken(
-	collection *mongo.Collection,
+func (db Mongo) InsertToken(
 	token models.NotificationToken,
-	ctx context.Context,
 ) error {
 	// Check if the token already exists
 	filter := bson.D{{Key: "deviceId", Value: token.DeviceId}}
-	res := collection.FindOne(ctx, filter)
+	res := db.collectionClient.FindOne(db.ctx, filter)
 
 	if res.Err() != nil {
 		if res.Err() == mongo.ErrNoDocuments {
 			// If token does not exist then insert it
 			token.ID = primitive.NewObjectID()
-			_, err := collection.InsertOne(ctx, token)
+			_, err := db.collectionClient.InsertOne(db.ctx, token)
 			return fmt.Errorf("failed to insert token: %s", err.Error())
 		}
 		return res.Err()
 	}
 
 	// If token exists update the timestamp to now
-	_, err := collection.UpdateOne(ctx, filter, bson.M{"$set": bson.M{"timestamp": time.Now().UTC()}})
+	_, err := db.collectionClient.UpdateOne(db.ctx, filter, bson.M{"$set": bson.M{"timestamp": time.Now().UTC()}})
 	if err != nil {
 		return fmt.Errorf("failed to update existing token: %s", err.Error())
 	}
-	logger.Logger.Info("Successfully inserting device token to db")
+	db.logger.Info("Successfully inserting device token to db")
 	return nil
 }
 
 // Get all the tokens registered for a user
-func GetTokens(
-	collection *mongo.Collection,
-	ctx context.Context,
+func (db Mongo) GetTokens(
 	userId string,
 ) ([]string, error) {
 	filter := bson.D{{Key: "userId", Value: userId}}
-	tokenCursor, err := collection.Find(ctx, filter)
+	tokenCursor, err := db.collectionClient.Find(db.ctx, filter)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find tokens for user: %s", err.Error())
 	}
 
 	tokens := make([]string, 0)
-	for tokenCursor.Next(ctx) {
+	for tokenCursor.Next(db.ctx) {
 		var token models.NotificationToken
 		err = tokenCursor.Decode(&token)
 		tokens = append(tokens, token.DeviceId)
@@ -110,6 +120,6 @@ func GetTokens(
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode notification token: %s", err.Error())
 	}
-	logger.Logger.Info("Successfully getting device token from db")
+	db.logger.Info("Successfully getting device token from db")
 	return tokens, nil
 }
