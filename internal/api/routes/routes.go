@@ -4,7 +4,7 @@ package routes
 import (
 	"net/http"
 
-	"github.com/AnhCaooo/electric-notifications/internal/api"
+	"github.com/AnhCaooo/electric-notifications/internal/api/handlers"
 )
 
 // Endpoint is the presentation of object which contains values for routing
@@ -14,19 +14,21 @@ type Endpoint struct {
 	Method  string
 }
 
-var Endpoints = []Endpoint{
-	{
-		Path:    "/v1/ping",
-		Handler: api.Ping,
-		Method:  "GET",
-	},
-	{
-		Path:    "/v1/tokens",
-		Handler: api.CreateToken,
-		Method:  "POST",
-	}, {
-		Path:    "/v1/notifications",
-		Handler: api.SendNotifications,
-		Method:  "POST",
-	},
+func InitializeEndpoints(handler *handlers.Handler) []Endpoint {
+	return []Endpoint{
+		{
+			Path:    "/v1/ping",
+			Handler: handler.Ping,
+			Method:  "GET",
+		},
+		{
+			Path:    "/v1/tokens",
+			Handler: handler.CreateToken,
+			Method:  "POST",
+		}, {
+			Path:    "/v1/notifications",
+			Handler: handler.SendNotifications,
+			Method:  "POST",
+		},
+	}
 }

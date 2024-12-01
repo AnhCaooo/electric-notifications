@@ -18,6 +18,7 @@ import (
 	"github.com/AnhCaooo/electric-notifications/internal/db"
 	"github.com/AnhCaooo/electric-notifications/internal/firebase"
 	"github.com/AnhCaooo/electric-notifications/internal/logger"
+	"github.com/AnhCaooo/electric-notifications/internal/models"
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 )
@@ -25,46 +26,62 @@ import (
 func main() {
 	ctx := context.Background()
 	// Initialize logger
-	logger.Init()
-	defer logger.Logger.Sync()
+	logger := logger.Init()
+	defer logger.Sync()
 
+	configuration := &models.Config{}
 	// Read configuration file
-	err := config.ReadFile(&config.Config)
+	err := config.ReadFile(configuration)
 	if err != nil {
-		logger.Logger.Error(constants.Server, zap.Error(err))
+		logger.Error(constants.Server, zap.Error(err))
 		os.Exit(1)
 	}
 
 	// Initialize in-memory cache
-	cache.NewCache()
+	cache := cache.NewCache(logger)
 
 	// Initialize database connection
-	mongo, err := db.Init(ctx, config.Config.Database)
+	mongo := db.NewMongo(ctx, &configuration.Database, logger)
+	mongoClient, err := mongo.EstablishConnection()
 	if err != nil {
-		logger.Logger.Error(constants.Server, zap.Error(err))
+		logger.Error(constants.Server, zap.Error(err))
 		os.Exit(1)
 	}
-	defer mongo.Disconnect(ctx)
+	defer mongoClient.Disconnect(ctx)
 
 	// Initialize FCM connection
-	if err = firebase.Init(ctx); err != nil {
-		logger.Logger.Error(constants.Server, zap.Error(err))
+	firebase := firebase.NewFirebase(logger, ctx)
+	if err = firebase.EstablishConnection(); err != nil {
+		logger.Error(constants.Server, zap.Error(err))
 		os.Exit(1)
 	}
 
+	// Initialize Middleware
+	middleware := middleware.NewMiddleware(logger, configuration)
+	// Initialize Handler
+	handler := handlers.NewHandler(logger, cache, mongo, firebase)
+	// Initialize Endpoints pool
+	endpoints := routes.InitializeEndpoints(handler)
 	// Initial new router
 	r := mux.NewRouter()
-	// Middleware
-	r.Use(middleware.Logger)
-	r.Use(middleware.Authenticate)
 
-	for _, endpoint := range routes.Endpoints {
+	// Apply middlewares
+	middlewares := []func(http.Handler) http.Handler{
+		middleware.Logger,
+		middleware.Authenticate,
+	}
+	for _, mw := range middlewares {
+		r.Use(mw)
+	}
+
+	for _, endpoint := range endpoints {
 		r.HandleFunc(endpoint.Path, endpoint.Handler).Methods(endpoint.Method)
 	}
-	r.MethodNotAllowedHandler = http.HandlerFunc(handlers.NotAllowed)
-	r.NotFoundHandler = http.HandlerFunc(handlers.NotFound)
+
+	r.MethodNotAllowedHandler = http.HandlerFunc(handler.NotAllowed)
+	r.NotFoundHandler = http.HandlerFunc(handler.NotFound)
 
 	// Start server
-	logger.Logger.Info("Server started on", zap.String("port", config.Config.Server.Port))
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", config.Config.Server.Port), r))
+	logger.Info("Server started on", zap.String("port", configuration.Server.Port))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", configuration.Server.Port), r))
 }
