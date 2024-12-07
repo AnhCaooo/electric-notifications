@@ -81,7 +81,7 @@ func (fb Firebase) SendToMultiTokens(
 		Tokens: tokens,
 	}
 	//Send to Multiple Tokens
-	batchResponse, err := fb.cloudMessage.SendEachForMulticast(fb.ctx, payload)
+	batchResponse, err := fb.cloudMessage.SendMulticast(fb.ctx, payload)
 	if err != nil {
 		return fmt.Errorf("error sending notifications to multi devices: %s", err.Error())
 	}
@@ -95,7 +95,7 @@ func (fb Firebase) SendToMultiTokens(
 				failedTokens = append(failedTokens, tokens[idx])
 			}
 		}
-		fb.logger.Info("List of tokens that cause failures", zap.Any("tokens", failedTokens))
+		fb.logger.Error("List of tokens that cause failures", zap.Any("tokens", failedTokens))
 	} else {
 		fb.logger.Info("Successfully sent notifications to all  devices")
 	}
