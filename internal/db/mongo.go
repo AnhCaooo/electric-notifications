@@ -7,10 +7,9 @@ import (
 	"time"
 
 	"github.com/AnhCaooo/electric-notifications/internal/models"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"go.uber.org/zap"
 )
 
@@ -33,7 +32,7 @@ func NewMongo(ctx context.Context, config *models.Database, logger *zap.Logger) 
 // Function to connect to mongo database instance and create collection if it does not exist
 func (db *Mongo) EstablishConnection() (*mongo.Client, error) {
 	clientOptions := options.Client().ApplyURI(db.getURI())
-	client, err := mongo.Connect(db.ctx, clientOptions)
+	client, err := mongo.Connect(clientOptions)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database. Error: %s", err.Error())
 	}
@@ -84,7 +83,7 @@ func (db Mongo) InsertToken(
 	if res.Err() != nil {
 		if res.Err() == mongo.ErrNoDocuments {
 			// If token does not exist then insert it
-			token.ID = primitive.NewObjectID()
+			token.ID = bson.NewObjectID()
 			_, err := db.collectionClient.InsertOne(db.ctx, token)
 			return fmt.Errorf("failed to insert token: %s", err.Error())
 		}
