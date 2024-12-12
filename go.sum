@@ -19,6 +19,8 @@ firebase.google.com/go/v4 v4.15.1 h1:tR2dzKw1MIfCfG2bhAyxa5KQ57zcE7iFKmeYClET6ZM
 firebase.google.com/go/v4 v4.15.1/go.mod h1:eunxbsh4UXI2rA8po3sOiebvWYuW0DVxAdZFO0I6wdY=
 github.com/AnhCaooo/go-goods v0.0.0-20241205152514-69647de1ea73 h1:Zcd/iJ2sHSKLI1LZi6DL23XU3mS4ffgeVnXPNdf2TyA=
 github.com/AnhCaooo/go-goods v0.0.0-20241205152514-69647de1ea73/go.mod h1:qlHRoq/7cr2yBAwl6QTdu9Qj55XgtPnbncyGKmfv7uc=
+github.com/AnhCaooo/go-goods v0.0.0-20241206151331-df6dc86b5bb1 h1:pBLxeTsojIy9QXC0MKlXFCGpybgbrPL0uw38pzOgJMw=
+github.com/AnhCaooo/go-goods v0.0.0-20241206151331-df6dc86b5bb1/go.mod h1:qlHRoq/7cr2yBAwl6QTdu9Qj55XgtPnbncyGKmfv7uc=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/MicahParks/keyfunc v1.9.0 h1:lhKd5xrFHLNOWrDc4Tyb/Q1AJ4LCzQ48GVJyVIID3+o=
 github.com/MicahParks/keyfunc v1.9.0/go.mod h1:IdnCilugA0O/99dW+/MkvlyrsX8+L8+x95xuVNtM5jw=

@@ -4,7 +4,7 @@ go 1.21.6
 
 require (
 	firebase.google.com/go/v4 v4.15.1
-	github.com/AnhCaooo/go-goods v0.0.0-20241205152514-69647de1ea73
+	github.com/AnhCaooo/go-goods v0.0.0-20241206151331-df6dc86b5bb1
 	github.com/gorilla/mux v1.8.1
 	go.mongodb.org/mongo-driver v1.16.1
 	go.uber.org/zap v1.27.0
