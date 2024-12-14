@@ -1,5 +1,5 @@
 # Created by Anh Cao on 27.08.2024.
-FROM --platform=linux/amd64 golang:alpine
+FROM golang:alpine
 
 LABEL maintainer="Anh Cao <anhcao4922@gmail.com>"
 
