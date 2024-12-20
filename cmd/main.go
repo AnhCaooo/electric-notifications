@@ -40,17 +40,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Initialize in-memory cache
-	cache := cache.NewCache(logger)
-
 	// Initialize database connection
 	mongo := db.NewMongo(ctx, &configuration.Database, logger)
-	mongoClient, err := mongo.EstablishConnection()
-	if err != nil {
+	if err := mongo.EstablishConnection(); err != nil {
 		logger.Error(constants.Server, zap.Error(err))
 		os.Exit(1)
 	}
-	defer mongoClient.Disconnect(ctx)
+	defer mongo.Client.Disconnect(ctx)
 
 	// Initialize FCM connection
 	firebase := firebase.NewFirebase(logger, ctx)
@@ -58,18 +54,13 @@ func main() {
 		logger.Error(constants.Server, zap.Error(err))
 		os.Exit(1)
 	}
-
-	handler := handlers.NewHandler(logger, cache, mongo, firebase)
-	middleware := middleware.NewMiddleware(logger, configuration)
-	endpoints := routes.InitializeEndpoints(handler)
-
-	// Initial new Mux router
-	r := initializeRouter(handler, middleware, endpoints)
 	// Start server
-	run(ctx, logger, configuration, r)
+	run(ctx, logger, configuration, mongo, firebase)
 }
 
-func initializeRouter(handler *handlers.Handler, middleware *middleware.Middleware, endpoints []routes.Endpoint) *mux.Router {
+// newMuxRouter creates and configures a new mux.Router instance.
+// It applies the provided middlewares and sets up the endpoint handlers.
+func newMuxRouter(handler *handlers.Handler, middleware *middleware.Middleware, endpoints []routes.Endpoint) *mux.Router {
 	r := mux.NewRouter()
 	// Apply middlewares
 	middlewares := []func(http.Handler) http.Handler{
@@ -90,10 +81,17 @@ func initializeRouter(handler *handlers.Handler, middleware *middleware.Middlewa
 	return r
 }
 
-func run(ctx context.Context, logger *zap.Logger, config *models.Config, r *mux.Router) {
+// run initializes and starts the HTTP server, sets up signal handling for graceful shutdown,
+// and manages the server lifecycle.
+func run(ctx context.Context, logger *zap.Logger, config *models.Config, mongo *db.Mongo, firebase *firebase.Firebase) {
+	cache := cache.NewCache(logger)
+	handler := handlers.NewHandler(logger, cache, mongo, firebase)
+	middleware := middleware.NewMiddleware(logger, config)
+	endpoints := routes.InitializeEndpoints(handler)
+
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%s", config.Server.Port),
-		Handler: r,
+		Handler: newMuxRouter(handler, middleware, endpoints),
 	}
 
 	// Channel to listen for termination signals

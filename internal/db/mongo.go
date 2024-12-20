@@ -14,40 +14,41 @@ import (
 )
 
 type Mongo struct {
-	config           *models.Database
-	logger           *zap.Logger
-	ctx              context.Context
-	collectionClient *mongo.Collection
+	config     *models.Database
+	logger     *zap.Logger
+	ctx        context.Context
+	Client     *mongo.Client
+	collection *mongo.Collection
 }
 
 func NewMongo(ctx context.Context, config *models.Database, logger *zap.Logger) *Mongo {
 	return &Mongo{
-		config:           config,
-		logger:           logger,
-		ctx:              ctx,
-		collectionClient: nil,
+		config:     config,
+		logger:     logger,
+		ctx:        ctx,
+		collection: nil,
 	}
 }
 
 // Function to connect to mongo database instance and create collection if it does not exist
-func (db *Mongo) EstablishConnection() (*mongo.Client, error) {
+func (db *Mongo) EstablishConnection() (err error) {
 	clientOptions := options.Client().ApplyURI(db.getURI())
-	client, err := mongo.Connect(clientOptions)
+	db.Client, err = mongo.Connect(clientOptions)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to database. Error: %s", err.Error())
+		return fmt.Errorf("failed to connect to database. Error: %s", err.Error())
 	}
 
-	err = client.Ping(db.ctx, nil)
+	err = db.Client.Ping(db.ctx, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to ping database. Error: %s", err.Error())
+		return fmt.Errorf("failed to ping database. Error: %s", err.Error())
 	}
 
-	db.collectionClient = client.Database(db.config.Name).Collection(db.config.Collection)
-	if err = db.createIndex(db.collectionClient); err != nil {
-		return nil, err
+	db.collection = db.Client.Database(db.config.Name).Collection(db.config.Collection)
+	if err = db.createIndex(db.collection); err != nil {
+		return err
 	}
 	db.logger.Info("Successfully connected to database")
-	return client, nil
+	return nil
 }
 
 func (db Mongo) getURI() string {
@@ -78,20 +79,20 @@ func (db Mongo) InsertToken(
 ) error {
 	// Check if the token already exists
 	filter := bson.D{{Key: "deviceId", Value: token.DeviceId}}
-	res := db.collectionClient.FindOne(db.ctx, filter)
+	res := db.collection.FindOne(db.ctx, filter)
 
 	if res.Err() != nil {
 		if res.Err() == mongo.ErrNoDocuments {
 			// If token does not exist then insert it
 			token.ID = bson.NewObjectID()
-			_, err := db.collectionClient.InsertOne(db.ctx, token)
+			_, err := db.collection.InsertOne(db.ctx, token)
 			return fmt.Errorf("failed to insert token: %s", err.Error())
 		}
 		return res.Err()
 	}
 
 	// If token exists update the timestamp to now
-	_, err := db.collectionClient.UpdateOne(db.ctx, filter, bson.M{"$set": bson.M{"timestamp": time.Now().UTC()}})
+	_, err := db.collection.UpdateOne(db.ctx, filter, bson.M{"$set": bson.M{"timestamp": time.Now().UTC()}})
 	if err != nil {
 		return fmt.Errorf("failed to update existing token: %s", err.Error())
 	}
@@ -104,7 +105,7 @@ func (db Mongo) GetTokens(
 	userId string,
 ) ([]string, error) {
 	filter := bson.D{{Key: "userId", Value: userId}}
-	tokenCursor, err := db.collectionClient.Find(db.ctx, filter)
+	tokenCursor, err := db.collection.Find(db.ctx, filter)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find tokens for user: %s", err.Error())
 	}
