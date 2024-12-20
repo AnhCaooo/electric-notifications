@@ -58,6 +58,8 @@ func main() {
 	run(ctx, logger, configuration, mongo, firebase)
 }
 
+// newMuxRouter creates and configures a new mux.Router instance.
+// It applies the provided middlewares and sets up the endpoint handlers.
 func newMuxRouter(handler *handlers.Handler, middleware *middleware.Middleware, endpoints []routes.Endpoint) *mux.Router {
 	r := mux.NewRouter()
 	// Apply middlewares
@@ -79,6 +81,8 @@ func newMuxRouter(handler *handlers.Handler, middleware *middleware.Middleware, 
 	return r
 }
 
+// run initializes and starts the HTTP server, sets up signal handling for graceful shutdown,
+// and manages the server lifecycle.
 func run(ctx context.Context, logger *zap.Logger, config *models.Config, mongo *db.Mongo, firebase *firebase.Firebase) {
 	cache := cache.NewCache(logger)
 	handler := handlers.NewHandler(logger, cache, mongo, firebase)
