@@ -1,15 +1,13 @@
 // AnhCao 2024
 //
 // Package rabbitmq provides a RabbitMQ client implementation for establishing connections,
-// creating producers and consumers, and managing message queues. It includes functionality
+// creating consumers, and managing message queues. It includes functionality
 // for monitoring and reconnecting to RabbitMQ servers, as well as handling message
-// production and consumption with multiple workers.
+// consumption with multiple workers.
 //
 // Types:
 //
 // - RabbitMQ: Main struct for managing RabbitMQ connections and channels
-//
-// - Producer: Struct for managing message production
 //
 // - Consumer: Struct for managing message consumption
 package rabbitmq

@@ -37,12 +37,12 @@ func (fb *Firebase) EstablishConnection() error {
 	// Initialize Firebase SDK with Google Application Default credentials
 	app, err := firebase.NewApp(fb.ctx, nil, opt)
 	if err != nil {
-		return fmt.Errorf("error initializing connection with Firebase app: %s", err.Error())
+		return fmt.Errorf("failed to initialize connection with Firebase app: %s", err.Error())
 	}
 	// Get the FCM object
 	fb.cloudMessage, err = app.Messaging(fb.ctx)
 	if err != nil {
-		return fmt.Errorf("error getting Messaging client: %s", err.Error())
+		return fmt.Errorf("failed to get Messaging client: %s", err.Error())
 	}
 
 	fb.logger.Info("Successfully connected to Firebase Cloud Message platform")
