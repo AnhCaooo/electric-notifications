@@ -4,24 +4,19 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
-	"time"
 
-	"github.com/AnhCaooo/electric-notifications/internal/api/handlers"
-	"github.com/AnhCaooo/electric-notifications/internal/api/middleware"
-	"github.com/AnhCaooo/electric-notifications/internal/api/routes"
-	"github.com/AnhCaooo/electric-notifications/internal/cache"
+	"github.com/AnhCaooo/electric-notifications/internal/api"
 	"github.com/AnhCaooo/electric-notifications/internal/config"
 	"github.com/AnhCaooo/electric-notifications/internal/constants"
 	"github.com/AnhCaooo/electric-notifications/internal/db"
 	"github.com/AnhCaooo/electric-notifications/internal/firebase"
 	"github.com/AnhCaooo/electric-notifications/internal/models"
+	"github.com/AnhCaooo/electric-notifications/internal/rabbitmq"
 	"github.com/AnhCaooo/go-goods/log"
-	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -58,70 +53,44 @@ func main() {
 	run(ctx, logger, configuration, mongo, firebase)
 }
 
-// newMuxRouter creates and configures a new mux.Router instance.
-// It applies the provided middlewares and sets up the endpoint handlers.
-func newMuxRouter(handler *handlers.Handler, middleware *middleware.Middleware, endpoints []routes.Endpoint) *mux.Router {
-	r := mux.NewRouter()
-	// Apply middlewares
-	middlewares := []func(http.Handler) http.Handler{
-		middleware.Logger,
-		middleware.Authenticate,
-	}
-	for _, mw := range middlewares {
-		r.Use(mw)
-	}
-
-	// Apply endpoint handlers
-	for _, endpoint := range endpoints {
-		r.HandleFunc(endpoint.Path, endpoint.Handler).Methods(endpoint.Method)
-	}
-
-	r.MethodNotAllowedHandler = http.HandlerFunc(handler.NotAllowed)
-	r.NotFoundHandler = http.HandlerFunc(handler.NotFound)
-	return r
-}
-
 // run initializes and starts the HTTP server, sets up signal handling for graceful shutdown,
 // and manages the server lifecycle.
 func run(ctx context.Context, logger *zap.Logger, config *models.Config, mongo *db.Mongo, firebase *firebase.Firebase) {
-	cache := cache.NewCache(logger)
-	handler := handlers.NewHandler(logger, cache, mongo, firebase)
-	middleware := middleware.NewMiddleware(logger, config)
-	endpoints := routes.InitializeEndpoints(handler)
-
-	server := &http.Server{
-		Addr:    fmt.Sprintf(":%s", config.Server.Port),
-		Handler: newMuxRouter(handler, middleware, endpoints),
-	}
-
 	// Channel to listen for termination signals
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 
-	// Run the server in a separate goroutine
+	var wg sync.WaitGroup
+	// Error channel to listen for errors from goroutines
+	errChan := make(chan error, 2)
+	// StopChan to listen for stop signal
+	stopChan := make(chan struct{})
+
+	// HTTP server
+	httpServer := api.NewHTTPServer(ctx, logger, config, mongo, firebase)
+	httpServer.Start(1, errChan, &wg)
+	// RabbitMQ consumer
+	rabbitMQ := rabbitmq.NewRabbit(ctx, &config.MessageBroker, logger, mongo, firebase)
+	if err := rabbitMQ.EstablishConnection(); err != nil {
+		logger.Fatal("failed to establish connection with RabbitMQ", zap.Error(err))
+	}
+	rabbitMQ.StartConsumers(&wg, errChan, stopChan)
+
+	// Monitor all errors from errChan and log them
 	go func() {
-		logger.Info("Server starting", zap.String("port", config.Server.Port))
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logger.Fatal("Server error", zap.Error(err))
+		for err := range errChan {
+			logger.Error("error occurred", zap.Error(err))
 		}
 	}()
 
 	// Wait for termination signal
-	select {
-	case <-ctx.Done(): // Context cancellation
-		logger.Warn("Context canceled")
-	case <-stop: // OS signal received
-		logger.Info("Termination signal received")
-	}
-
-	// Create a new context with timeout for graceful shutdown
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	logger.Info("Shutting down server...")
-	if err := server.Shutdown(shutdownCtx); err != nil {
-		logger.Fatal("Server forced to shutdown", zap.Error(err))
-	}
-
-	logger.Info("Server exited gracefully")
+	<-stop
+	logger.Info("Termination signal received")
+	close(stopChan)
+	httpServer.Stop()
+	// Wait for all goroutines to finish
+	wg.Wait()
+	// Signal all errors to stop
+	close(errChan)
+	logger.Info("HTTP server and RabbitMQ exited gracefully")
 }

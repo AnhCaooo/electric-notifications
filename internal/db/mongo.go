@@ -13,6 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// Mongo represents a MongoDB client with configuration, logger, context, and collection information.
 type Mongo struct {
 	config     *models.Database
 	logger     *zap.Logger
@@ -21,6 +22,8 @@ type Mongo struct {
 	collection *mongo.Collection
 }
 
+// NewMongo initializes a new Mongo instance with the provided context, database configuration, and logger.
+// It returns a pointer to the newly created Mongo instance.
 func NewMongo(ctx context.Context, config *models.Database, logger *zap.Logger) *Mongo {
 	return &Mongo{
 		config:     config,
@@ -55,6 +58,10 @@ func (db Mongo) getURI() string {
 	return fmt.Sprintf("mongodb://%s:%s@%s:%s/?timeoutMS=5000", db.config.Username, db.config.Password, db.config.Host, db.config.Port)
 }
 
+// createIndex creates an index on the specified MongoDB collection.
+// The index is created on the "timestamp" field and is set to expire
+// documents after a certain period of time. The expiration time is
+// calculated as 3 weeks.
 func (db Mongo) createIndex(collection *mongo.Collection) error {
 	const weeklyHours = 24 * 7
 
@@ -74,9 +81,7 @@ func (db Mongo) createIndex(collection *mongo.Collection) error {
 }
 
 // Insert a notification token
-func (db Mongo) InsertToken(
-	token models.NotificationToken,
-) error {
+func (db Mongo) InsertToken(token models.NotificationToken) error {
 	// Check if the token already exists
 	filter := bson.D{{Key: "deviceId", Value: token.DeviceId}}
 	res := db.collection.FindOne(db.ctx, filter)
@@ -96,14 +101,11 @@ func (db Mongo) InsertToken(
 	if err != nil {
 		return fmt.Errorf("failed to update existing token: %s", err.Error())
 	}
-	db.logger.Info("Successfully inserting device token to db")
 	return nil
 }
 
 // Get all the tokens registered for a user
-func (db Mongo) GetTokens(
-	userId string,
-) ([]string, error) {
+func (db Mongo) GetTokens(userId string) ([]string, error) {
 	filter := bson.D{{Key: "userId", Value: userId}}
 	tokenCursor, err := db.collection.Find(db.ctx, filter)
 	if err != nil {
@@ -120,6 +122,5 @@ func (db Mongo) GetTokens(
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode notification token: %s", err.Error())
 	}
-	db.logger.Info("Successfully getting device token from db")
 	return tokens, nil
 }

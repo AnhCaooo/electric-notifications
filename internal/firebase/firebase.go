@@ -37,12 +37,12 @@ func (fb *Firebase) EstablishConnection() error {
 	// Initialize Firebase SDK with Google Application Default credentials
 	app, err := firebase.NewApp(fb.ctx, nil, opt)
 	if err != nil {
-		return fmt.Errorf("error initializing connection with Firebase app: %s", err.Error())
+		return fmt.Errorf("failed to initialize connection with Firebase app: %s", err.Error())
 	}
 	// Get the FCM object
 	fb.cloudMessage, err = app.Messaging(fb.ctx)
 	if err != nil {
-		return fmt.Errorf("error getting Messaging client: %s", err.Error())
+		return fmt.Errorf("failed to get Messaging client: %s", err.Error())
 	}
 
 	fb.logger.Info("Successfully connected to Firebase Cloud Message platform")
@@ -65,7 +65,6 @@ func (fb Firebase) SendToSingleToken(
 	if err != nil {
 		return fmt.Errorf("error sending notification to single device: %s", err.Error())
 	}
-	fb.logger.Info("Successfully sent notification to single device")
 	return nil
 }
 
@@ -96,8 +95,6 @@ func (fb Firebase) SendToMultiTokens(
 			}
 		}
 		fb.logger.Error("List of tokens that cause failures", zap.Any("tokens", failedTokens))
-	} else {
-		fb.logger.Info("Successfully sent notifications to all  devices")
 	}
 	return nil
 }
