@@ -55,7 +55,7 @@ func (db *Mongo) EstablishConnection() (err error) {
 }
 
 func (db Mongo) getURI() string {
-	return fmt.Sprintf("mongodb://%s:%s@%s:%s/?timeoutMS=5000", db.config.Username, db.config.Password, "localhost", db.config.Port)
+	return fmt.Sprintf("mongodb://%s:%s@%s:%s/?timeoutMS=5000", db.config.Username, db.config.Password, db.config.Host, db.config.Port)
 }
 
 // createIndex creates an index on the specified MongoDB collection.
