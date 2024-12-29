@@ -65,7 +65,6 @@ func (fb Firebase) SendToSingleToken(
 	if err != nil {
 		return fmt.Errorf("error sending notification to single device: %s", err.Error())
 	}
-	fb.logger.Info("Successfully sent notification to single device")
 	return nil
 }
 
@@ -96,8 +95,6 @@ func (fb Firebase) SendToMultiTokens(
 			}
 		}
 		fb.logger.Error("List of tokens that cause failures", zap.Any("tokens", failedTokens))
-	} else {
-		fb.logger.Info("Successfully sent notifications to all  devices")
 	}
 	return nil
 }
