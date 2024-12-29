@@ -15,6 +15,7 @@ import (
 	"github.com/AnhCaooo/electric-notifications/internal/db"
 	"github.com/AnhCaooo/electric-notifications/internal/firebase"
 	"github.com/AnhCaooo/electric-notifications/internal/models"
+	"github.com/AnhCaooo/electric-notifications/internal/rabbitmq"
 	"github.com/AnhCaooo/go-goods/log"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -59,20 +60,37 @@ func run(ctx context.Context, logger *zap.Logger, config *models.Config, mongo *
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 
-	// Error channel to listen for errors from goroutines
 	var wg sync.WaitGroup
-	errChan := make(chan error, 3)
+	// Error channel to listen for errors from goroutines
+	errChan := make(chan error, 2)
+	// StopChan to listen for stop signal
+	stopChan := make(chan struct{})
 
 	// HTTP server
 	httpServer := api.NewHTTPServer(ctx, logger, config, mongo, firebase)
 	httpServer.Start(1, errChan, &wg)
+	// RabbitMQ consumer
+	rabbitMQ := rabbitmq.NewRabbit(ctx, &config.MessageBroker, logger, mongo, firebase)
+	if err := rabbitMQ.EstablishConnection(); err != nil {
+		logger.Fatal("failed to establish connection with RabbitMQ", zap.Error(err))
+	}
+	rabbitMQ.StartConsumers(&wg, errChan, stopChan)
 
+	// Monitor all errors from errChan and log them
+	go func() {
+		for err := range errChan {
+			logger.Error("error occurred", zap.Error(err))
+		}
+	}()
+
+	// Wait for termination signal
 	<-stop
 	logger.Info("Termination signal received")
+	close(stopChan)
 	httpServer.Stop()
 	// Wait for all goroutines to finish
 	wg.Wait()
 	// Signal all errors to stop
 	close(errChan)
-	logger.Info("HTTP server exited gracefully")
+	logger.Info("HTTP server and RabbitMQ exited gracefully")
 }
