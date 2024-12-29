@@ -6,6 +6,7 @@ require (
 	firebase.google.com/go/v4 v4.15.1
 	github.com/AnhCaooo/go-goods v0.0.0-20241206151331-df6dc86b5bb1
 	github.com/gorilla/mux v1.8.1
+	github.com/rabbitmq/amqp091-go v1.10.0
 	go.mongodb.org/mongo-driver/v2 v2.0.0
 	go.uber.org/zap v1.27.0
 	google.golang.org/api v0.197.0
