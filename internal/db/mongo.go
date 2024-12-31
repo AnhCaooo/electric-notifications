@@ -124,3 +124,24 @@ func (db Mongo) GetTokens(userId string) ([]string, error) {
 	}
 	return tokens, nil
 }
+
+// GetAllUserIDs retrieves all user IDs from the MongoDB collection.
+// It returns a slice of user IDs and an error if any occurs during the process.
+func (db Mongo) GetAllUserIDs() ([]string, error) {
+	var userIDs []string
+
+	// Retrieves documents that match the filter and prints them as structs
+	cursor, err := db.collection.Find(context.TODO(), bson.D{})
+	if err != nil {
+		return userIDs, fmt.Errorf("failed: %s", err.Error())
+	}
+	var results []models.NotificationToken
+	if err = cursor.All(db.ctx, &results); err != nil {
+		return userIDs, fmt.Errorf("failed to cursor all notification tokens: %s", err.Error())
+	}
+	for _, result := range results {
+		userIDs = append(userIDs, result.UserId)
+	}
+	db.logger.Info("get all user IDs successfully", zap.Any("userIDs", userIDs))
+	return userIDs, nil
+}
