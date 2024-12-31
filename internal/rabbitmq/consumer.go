@@ -8,6 +8,7 @@ import (
 	"github.com/AnhCaooo/electric-notifications/internal/constants"
 	"github.com/AnhCaooo/electric-notifications/internal/db"
 	"github.com/AnhCaooo/electric-notifications/internal/firebase"
+	"github.com/AnhCaooo/electric-notifications/internal/helpers"
 	"github.com/AnhCaooo/electric-notifications/internal/models"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.uber.org/zap"
@@ -23,8 +24,6 @@ const (
 type Consumer struct {
 	// The AMQP channel used for communication with RabbitMQ.
 	channel *amqp.Channel
-	// The AMQP connection to the RabbitMQ server.
-	connection *amqp.Connection
 	// The context for managing the consumer's lifecycle and cancellation.
 	ctx context.Context
 	// The name of the RabbitMQ exchange to bind the consumer to.
@@ -130,23 +129,33 @@ func (c *Consumer) Listen(stopChan <-chan struct{}, errChan chan<- error) {
 			switch msg.RoutingKey {
 			case PUSH_NOTIFICATION_KEY:
 				c.logger.Info(fmt.Sprintf("[worker_%d] received a message for pushing notification", c.workerID))
-				var notificationMessage models.NotificationMessage
+				var notificationMessage models.PricesMessage
 				json.Unmarshal(msg.Body, &notificationMessage)
 
-				// retrieve all associated device tokens with given userId
-				tokens, err := c.mongo.GetTokens(notificationMessage.UserId)
+				userIDs, err := c.mongo.GetAllUserIDs()
 				if err != nil {
-					errMsg := fmt.Errorf("[worker_%d] %s failed to get tokens: %s", c.workerID, constants.Server, err.Error())
+					errMsg := fmt.Errorf("[worker_%d] %s failed to get all user IDs: %s", c.workerID, constants.Server, err.Error())
 					errChan <- errMsg
 					return
 				}
-				err = c.firebase.SendToMultiTokens(tokens, notificationMessage.UserId, notificationMessage.Message)
-				if err != nil {
-					errMsg := fmt.Errorf("[worker_%d] %s failed to send multi tokens: %s", c.workerID, constants.Server, err.Error())
-					errChan <- errMsg
-					return
+
+				for _, userID := range userIDs {
+					// retrieve all associated device tokens with given userId
+					tokens, err := c.mongo.GetTokens(userID)
+					if err != nil {
+						errMsg := fmt.Errorf("[worker_%d] %s failed to get tokens: %s", c.workerID, constants.Server, err.Error())
+						errChan <- errMsg
+						return
+					}
+					err = c.firebase.SendToMultiTokens(tokens, userID, helpers.GenerateNotificationMessageForSpotPrice(&notificationMessage))
+					if err != nil {
+						errMsg := fmt.Errorf("[worker_%d] %s failed to send multi tokens: %s", c.workerID, constants.Server, err.Error())
+						errChan <- errMsg
+						return
+					}
 				}
-				c.logger.Info(fmt.Sprintf("[worker_%d] send tokens successfully", c.workerID))
+
+				c.logger.Info(fmt.Sprintf("[worker_%d] sent tokens successfully: %s", c.workerID, helpers.GenerateNotificationMessageForSpotPrice(&notificationMessage)))
 			default:
 				c.logger.Info(fmt.Sprintf("[worker_%d] received an message from undefined routing key: '%s' with message: %v", c.workerID, msg.RoutingKey, msg.Body))
 			}

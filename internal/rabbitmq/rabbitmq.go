@@ -169,7 +169,6 @@ func (r *RabbitMQ) startConsumer(workerID int, exchange, routingKey, queueName s
 
 }
 
-// Finally build and return consumer instance
 // newConsumer creates a new RabbitMQ consumer with the specified worker ID and exchange name.
 // It opens a new channel, declares the exchange, and returns a Consumer instance.
 //
@@ -183,13 +182,11 @@ func (r *RabbitMQ) startConsumer(workerID int, exchange, routingKey, queueName s
 //   - *Consumer: A pointer to the newly created Consumer instance.
 //   - error: An error if the channel could not be opened or the exchange could not be declared.
 func (r *RabbitMQ) newConsumer(workerID int, exchange string) (*Consumer, error) {
-	if r.connection == nil {
-		return nil, fmt.Errorf("RabbitMQ connection is nil, ensure connection is established")
-	}
+	// reconnect to RabbitMQ if the connection is nil
 	// create a new channel
 	ch, err := r.connection.Channel()
 	if err != nil {
-		return nil, fmt.Errorf("failed to open a channel for consumer: %s", err.Error())
+		return nil, fmt.Errorf("[worker_%d] failed to open a channel for consumer: %s", workerID, err.Error())
 	}
 
 	durable, autoDelete, internal, noWait := true, false, false, false
@@ -202,17 +199,16 @@ func (r *RabbitMQ) newConsumer(workerID int, exchange string) (*Consumer, error)
 		noWait,        // no-wait
 		nil,           // arguments
 	); err != nil {
-		return nil, fmt.Errorf("failed to declare an exchange: %s", err.Error())
+		return nil, fmt.Errorf("[worker_%d] failed to declare an exchange: %s", workerID, err.Error())
 	}
 
 	r.channels = append(r.channels, ch)
 	return &Consumer{
-		channel:    ch,
-		ctx:        r.ctx,
-		exchange:   exchange,
-		logger:     r.logger,
-		mongo:      r.mongo,
-		workerID:   workerID,
-		connection: r.connection,
+		channel:  ch,
+		ctx:      r.ctx,
+		exchange: exchange,
+		logger:   r.logger,
+		mongo:    r.mongo,
+		workerID: workerID,
 	}, nil
 }
