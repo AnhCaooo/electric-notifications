@@ -16,6 +16,7 @@ import (
 	"github.com/AnhCaooo/electric-notifications/internal/db"
 	"github.com/AnhCaooo/electric-notifications/internal/firebase"
 	"github.com/AnhCaooo/electric-notifications/internal/models"
+	httpSwagger "github.com/swaggo/http-swagger" // http-swagger middleware
 	"go.uber.org/zap"
 )
 
@@ -92,7 +93,7 @@ func (a *API) newMuxRouter() *mux.Router {
 	}
 
 	// swagger endpoint for API documentation
-	// r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
+	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 	// Apply endpoint handlers
 	for _, endpoint := range endpoints {
 		r.HandleFunc(endpoint.Path, endpoint.Handler).Methods(endpoint.Method)
