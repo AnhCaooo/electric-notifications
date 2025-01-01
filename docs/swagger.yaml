@@ -1,0 +1,127 @@
+basePath: /
+definitions:
+  models.NotificationMessage:
+    properties:
+      message:
+        example: Hello, World!
+        type: string
+      userId:
+        example: "1234567890"
+        type: string
+    type: object
+  models.NotificationToken:
+    properties:
+      deviceId:
+        description: |-
+          Identifier of the device associated with the notification token.
+          todo: maybe this could be a slice instead of single deviceID. This way we can send notifications to multiple devices that user has.
+        example: "1234567890"
+        type: string
+      id:
+        description: Unique identifier for the notification token.
+        example: "1234567890"
+        type: string
+      timestamp:
+        description: The time when the notification token was created.
+        example: 2025-01-02 14:00:00 +0200 EET
+        type: string
+      userId:
+        description: Identifier of the user associated with the notification token.
+        example: "1234567890"
+        type: string
+    type: object
+host: localhost:5003
+info:
+  contact:
+    email: anhcao4922@gmail.com
+    name: Anh Cao
+  description: Push notifications service for electric application
+  title: Notifications API
+  version: 1.0.0
+paths:
+  /v1/notifications:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        It retrieves the user ID from the request context and decodes the request body to get the notification message.
+        Then validates the user ID and retrieves the associated device tokens from the database. Finally, it sends the notification message to the retrieved device tokens using Firebase.
+      parameters:
+      - description: represents a message to be sent to a user.
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/models.NotificationMessage'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: If the token is successfully inserted into the database.
+          schema:
+            type: string
+        "400":
+          description: Invalid request
+          schema:
+            type: string
+        "401":
+          description: Unauthenticated/Unauthorized
+          schema:
+            type: string
+        "403":
+          description: If the user ID in the request body does not match the user
+            ID in the context.
+          schema:
+            type: string
+        "500":
+          description: If there is an error retrieving the device tokens or sending
+            the notifications, it responds with an internal server error.
+          schema:
+            type: string
+      summary: Sends notifications to user devices
+      tags:
+      - notifications
+  /v1/token:
+    post:
+      consumes:
+      - application/json
+      description: It extracts the user ID from the request context and decodes the
+        request body to get the notification token details. If the user ID in the
+        request body does not match the user ID in the context, it returns a forbidden
+        error.
+      parameters:
+      - description: represents a token used for sending notifications to  one or
+          more specific device.
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/models.NotificationToken'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: If the token is successfully inserted into the database.
+          schema:
+            type: string
+        "400":
+          description: Invalid request
+          schema:
+            type: string
+        "401":
+          description: Unauthenticated/Unauthorized
+          schema:
+            type: string
+        "403":
+          description: If the user ID in the request body does not match the user
+            ID in the context.
+          schema:
+            type: string
+        "500":
+          description: If there is an error inserting the token into the database.
+          schema:
+            type: string
+      summary: Create a notification token that contains the user ID and device token
+      tags:
+      - notifications
+swagger: "2.0"

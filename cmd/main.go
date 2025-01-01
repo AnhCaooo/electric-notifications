@@ -9,6 +9,7 @@ import (
 	"sync"
 	"syscall"
 
+	_ "github.com/AnhCaooo/electric-notifications/docs"
 	"github.com/AnhCaooo/electric-notifications/internal/api"
 	"github.com/AnhCaooo/electric-notifications/internal/config"
 	"github.com/AnhCaooo/electric-notifications/internal/constants"
@@ -21,6 +22,15 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+//	@title			Notifications API
+//	@version		1.0.0
+//	@description	Push notifications service for electric application
+
+//	@contact.name	Anh Cao
+//	@contact.email	anhcao4922@gmail.com
+
+// @host		localhost:5003
+// @BasePath	/
 func main() {
 	ctx := context.Background()
 	// Initialize logger

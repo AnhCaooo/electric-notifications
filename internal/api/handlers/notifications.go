@@ -12,7 +12,22 @@ import (
 	"github.com/AnhCaooo/go-goods/encode"
 )
 
-// create token to Mongo or update time live if it exists
+// CreateToken handles the creation of a notification token for a user.
+//
+//	@Summary		Create a notification token that contains the user ID and device tokens
+//	@Description	It extracts the user ID from the request context and decodes the request body to get the notification token details. If the user ID in the request body does not match the user ID in the context, it returns a forbidden error.
+//	@Tags			notifications
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		models.NotificationToken	true	"represents a token used for sending notifications to  one or more specific device.""
+//	@Success		200	{object}	string "If the token is successfully inserted into the database.""
+//	@Failure		400	{string}	string "Invalid request"
+//	@Failure		403	{string}	string "If the user ID in the request body does not match the user ID in the context."
+//	@Failure		401	{string}	string "Unauthenticated/Unauthorized"
+//	@Failure		500	{string}	string "If there is an error inserting the token into the database."
+//	@Router			/v1/token [post]
+//
+// todo: any response value?
 func (h Handler) CreateToken(w http.ResponseWriter, r *http.Request) {
 	userId, ok := r.Context().Value(constants.UserIdKey).(string)
 	if !ok {
@@ -45,6 +60,24 @@ func (h Handler) CreateToken(w http.ResponseWriter, r *http.Request) {
 	h.logger.Info(fmt.Sprintf("[worker_%d] insert token successfully", h.workerID))
 }
 
+// SendNotifications sends notifications to user devices.
+//
+//	@Summary		Sends notifications to user devices
+//	@Description	It retrieves the user ID from the request context and decodes the request body to get the notification message.
+//	@Description	Then validates the user ID and retrieves the associated device tokens from the database. Finally, it sends the notification message to the retrieved device tokens using Firebase.
+//
+//	@Tags			notifications
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		models.NotificationMessage	true	"represents a message to be sent to all devices that user has."
+//	@Success		200	{object}	string "If the token is successfully inserted into the database.""
+//	@Failure		400	{string}	string "Invalid request"
+//	@Failure		403	{string}	string "If the user ID in the request body does not match the user ID in the context."
+//	@Failure		401	{string}	string "Unauthenticated/Unauthorized"
+//	@Failure		500	{string}	string "If there is an error retrieving the device tokens or sending the notifications, it responds with an internal server error."
+//	@Router			/v1/notifications [post]
+//
+// todo: any response value?
 func (h Handler) SendNotifications(w http.ResponseWriter, r *http.Request) {
 	userId, ok := r.Context().Value(constants.UserIdKey).(string)
 	if !ok {

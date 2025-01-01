@@ -22,7 +22,7 @@ func InitializeEndpoints(handler *handlers.Handler) []Endpoint {
 			Method:  "GET",
 		},
 		{
-			Path:    "/v1/tokens",
+			Path:    "/v1/token",
 			Handler: handler.CreateToken,
 			Method:  "POST",
 		}, {
