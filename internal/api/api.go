@@ -21,30 +21,33 @@ import (
 )
 
 type API struct {
+	cache    *cache.Cache
 	config   *models.Config
 	ctx      context.Context
+	firebase *firebase.Firebase
 	logger   *zap.Logger
 	mongo    *db.Mongo
-	firebase *firebase.Firebase
-	workerID int
 	server   *http.Server
 	wg       *sync.WaitGroup
+	workerID int
 }
 
 // NewHTTPServer creates a new HTTP server instance
 func NewHTTPServer(
-	ctx context.Context,
-	logger *zap.Logger,
+	cache *cache.Cache,
 	config *models.Config,
-	mongo *db.Mongo,
+	ctx context.Context,
 	firebase *firebase.Firebase,
+	logger *zap.Logger,
+	mongo *db.Mongo,
 ) *API {
 	return &API{
-		ctx:      ctx,
+		cache:    cache,
 		config:   config,
+		ctx:      ctx,
+		firebase: firebase,
 		logger:   logger,
 		mongo:    mongo,
-		firebase: firebase,
 	}
 }
 
@@ -73,12 +76,10 @@ func (a *API) Start(workerID int, errChan chan<- error, wg *sync.WaitGroup) {
 // newMuxRouter is responsible for all the top-level HTTP stuff that
 // applies to all endpoints, like cache, database, CORS, auth middleware, and logging
 func (a *API) newMuxRouter() *mux.Router {
-	// Initialize cache
-	cache := cache.NewCache(a.logger, a.workerID)
 	// Initialize Middleware
 	middleware := middleware.NewMiddleware(a.logger, a.config, a.workerID)
 	// Initialize Handler
-	apiHandler := handlers.NewHandler(a.logger, cache, a.mongo, a.firebase, a.workerID)
+	apiHandler := handlers.NewHandler(a.logger, a.cache, a.mongo, a.firebase, a.workerID)
 	// Initialize Endpoints pool
 	endpoints := routes.InitializeEndpoints(apiHandler)
 
