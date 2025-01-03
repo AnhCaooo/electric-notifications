@@ -11,6 +11,7 @@ import (
 
 	_ "github.com/AnhCaooo/electric-notifications/docs"
 	"github.com/AnhCaooo/electric-notifications/internal/api"
+	"github.com/AnhCaooo/electric-notifications/internal/cache"
 	"github.com/AnhCaooo/electric-notifications/internal/config"
 	"github.com/AnhCaooo/electric-notifications/internal/constants"
 	"github.com/AnhCaooo/electric-notifications/internal/db"
@@ -53,6 +54,7 @@ func main() {
 	}
 	defer mongo.Client.Disconnect(ctx)
 
+	cache := cache.NewCache(logger)
 	// Initialize FCM connection
 	firebase := firebase.NewFirebase(logger, ctx)
 	if err = firebase.EstablishConnection(); err != nil {
@@ -60,12 +62,19 @@ func main() {
 		os.Exit(1)
 	}
 	// Start server
-	run(ctx, logger, configuration, mongo, firebase)
+	run(ctx, logger, configuration, mongo, firebase, cache)
 }
 
 // run initializes and starts the HTTP server, sets up signal handling for graceful shutdown,
 // and manages the server lifecycle.
-func run(ctx context.Context, logger *zap.Logger, config *models.Config, mongo *db.Mongo, firebase *firebase.Firebase) {
+func run(
+	ctx context.Context,
+	logger *zap.Logger,
+	config *models.Config,
+	mongo *db.Mongo,
+	firebase *firebase.Firebase,
+	cache *cache.Cache,
+) {
 	// Channel to listen for termination signals
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
@@ -77,7 +86,7 @@ func run(ctx context.Context, logger *zap.Logger, config *models.Config, mongo *
 	stopChan := make(chan struct{})
 
 	// HTTP server
-	httpServer := api.NewHTTPServer(ctx, logger, config, mongo, firebase)
+	httpServer := api.NewHTTPServer(cache, config, ctx, firebase, logger, mongo)
 	httpServer.Start(1, errChan, &wg)
 	// RabbitMQ consumer
 	rabbitMQ := rabbitmq.NewRabbit(ctx, &config.MessageBroker, logger, mongo, firebase)
